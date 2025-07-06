@@ -1,5 +1,6 @@
 local love = require 'love'
 local Enemy = require 'Enemy'
+local Button = require 'Button'
 
 math.randomseed(os.time())
 
@@ -21,10 +22,15 @@ local player = {
     y=30
 }
 
+local buttons = {
+    menu_state={}
+}
+
 local enemies = {}
 
 function love.load()
     love.mouse.setVisible(false)
+    buttons.menu_state.play_game = Button("Play Game", nil ,nil, 120, 55)
     table.insert(enemies,1,Enemy())
 end
 
@@ -42,10 +48,10 @@ function love.draw()
         for i=1, #enemies do
         enemies[i]:draw()
     end
-
         love.graphics.circle('fill', player.x,player.y, player.radius/2)
+    elseif game.state['menu'] then
+        buttons.menu_state.play_game:draw(10,20,10,20)
     end
-
     if not game.state['running'] then
         love.graphics.arc('fill', player.x,player.y,player.radius,0, math.pi / 2,500)
     end
