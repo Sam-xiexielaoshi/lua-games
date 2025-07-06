@@ -1,4 +1,4 @@
-local love = require('love')
+local love = require 'love'
 
 local game = {
     state = {
