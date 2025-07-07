@@ -14,6 +14,10 @@ function Button(text,func, func_param, width, height)
         text_x = 0,
         text_y = 0,
 
+        checkPressed = function(self, mouse_x, mouse_y, cursor_radius) 
+            
+        end,
+
         draw = function (self, button_x, button_y,text_x, text_y)
             self.button_x = button_x or self.button_x
             self.button_y = button_y or self.button_y

@@ -9,9 +9,9 @@ local game = {
     difficulty = 1,
 
     state = {
-        menu = false,
+        menu = true,
         paused = false,
-        running = true,
+        running = false,
         ended = false,
     }
 }
@@ -30,7 +30,9 @@ local enemies = {}
 
 function love.load()
     love.mouse.setVisible(false)
-    buttons.menu_state.play_game = Button("Play Game", nil ,nil, 120, 55)
+    buttons.menu_state.play_game = Button("Play Game", nil ,nil, 120, 40)
+    buttons.menu_state.settings = Button("Settings", nil ,nil, 120, 40)
+    buttons.menu_state.exit_game = Button("Exit", love.event.quit ,nil, 120, 40)
     table.insert(enemies,1,Enemy())
 end
 
@@ -50,9 +52,12 @@ function love.draw()
     end
         love.graphics.circle('fill', player.x,player.y, player.radius/2)
     elseif game.state['menu'] then
-        buttons.menu_state.play_game:draw(10,20,10,20)
+        buttons.menu_state.play_game:draw(10,20,17,10)
+        buttons.menu_state.settings:draw(10,70,17,10)
+        buttons.menu_state.exit_game:draw(10,120,17,10)
     end
     if not game.state['running'] then
+        love.graphics.setColor(0.7, 0, 0.7)
         love.graphics.arc('fill', player.x,player.y,player.radius,0, math.pi / 2,500)
     end
 end
