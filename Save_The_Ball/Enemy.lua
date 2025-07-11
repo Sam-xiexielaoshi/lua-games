@@ -1,6 +1,6 @@
 local love = require 'love'
 
-function Enemy()
+function Enemy(_level)
     local dice, _x, _y = math.random(1,4)
     local _radius = 10
 
@@ -41,10 +41,14 @@ function Enemy()
 
 
     return {
-        level =1,
+        level = _level or 1 ,
         radius = _radius,
         x = _x,
         y=_y,
+
+        checkTouched = function (self, player_x, player_y, cursor_radius)
+            return math.sqrt((self.x-player_x)^2 + (self.y-player_y)^2  )<=cursor_radius*2
+        end,
 
         move = function(self, player_x, player_y)
             if player_x - self.x >0 then
