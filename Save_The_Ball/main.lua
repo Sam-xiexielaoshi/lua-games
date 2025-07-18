@@ -51,6 +51,7 @@ local function changeGameState(state)
     game.state['paused'] = state == 'paused'
     game.state['running'] = state == 'running'
     game.state['ended'] = state == 'ended'
+    game.state['settings'] = state == 'settings'
 end 
 
 local function startNewGame()
@@ -84,7 +85,7 @@ end
 function love.load()
     love.mouse.setVisible(false)
     buttons.menu_state.play_game = Button("Play Game", startNewGame ,nil, 120, 40)
-    buttons.menu_state.settings = Button("Settings", nil ,nil, 120, 40)
+    buttons.menu_state.settings = Button("Settings", changeGameState, "settings", 120, 40)
     buttons.menu_state.exit_game = Button("Quit", love.event.quit ,nil, 120, 40)
 
     buttons.ended_state.replay_game = Button("Restart", startNewGame ,nil, 120, 40)
@@ -135,6 +136,11 @@ function love.draw()
         buttons.ended_state.menu:draw(love.graphics.getWidth()/2.25,love.graphics.getHeight()/2.33,17,10)
         buttons.ended_state.exit_game:draw(love.graphics.getWidth()/2.25,love.graphics.getHeight()/1.99,17,10)
         love.graphics.printf(math.floor(game.points), fonts.massive.font, 0, love.graphics.getHeight()/3-fonts.massive.size, love.graphics.getWidth(), "center")
+    elseif game.state['settings'] then
+        love.graphics.setFont(fonts.large.font)
+        love.graphics.printf("Settings Page", fonts.large.font, 0, 50, love.graphics.getWidth(), "center")
+        buttons.menu_state.menu = Button("Menu", changeGameState, "menu", 120, 40)
+        buttons.menu_state.menu:draw(10, 70, 17, 10)
     end
     if not game.state['running'] then
         love.graphics.setColor(0.7, 0, 0.7)
