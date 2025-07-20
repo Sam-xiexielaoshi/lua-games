@@ -1,4 +1,5 @@
 local love = require "love"
+local Player = require "Player"
 
 function love.load()
     love.mouse.setVisible(false)
