@@ -12,8 +12,11 @@ function Player(debugging)
         rotation = 0,
         thrusting = false,
         thrust = {
-            x=0,y=0,speed=5
+            x=0,y=0,speed=5,big_flame = false, flame=2.0
         },
+        draw_flame = function (self,fill_type,color)
+
+        end,
         draw = function (self)
             local opacity = 1
             if debugging then
