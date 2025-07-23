@@ -1,17 +1,29 @@
 local love = require "love"
 local Player = require "Player"
+local Game = require "states/Game"
 
 function love.load()
     love.mouse.setVisible(false)
     _G.mouse_x, _G.mouse_y = 0,0
     local show_debugging = true
     _G.player = Player(show_debugging)
+    _G.game = Game()
 end
 
 function love.keypressed(key)
-    if key == "w" or key=="up" or key=="kp8" then
-        player.thrusting = true
-    end
+    if game.states.running then
+        if key == "w" or key=="up" or key=="kp8" then
+            player.thrusting = true
+        end
+
+        if key == "escape" then
+            game:changeState("paused")
+        end
+        elseif game.states.paused then
+            if key == "escape" then
+                game:changeState("running")
+            end
+        end
 end
 function love.keyreleased(key)
     if key == "w" or key=="up" or key=="kp8" then
@@ -21,8 +33,10 @@ end
 
 function love.update()
     _G.mouse_x, _G.mouse_y = love.mouse.getPosition()
-
-    player:move()
+    if game.states.running then
+        player:move()   
+    end
+    
 end
 
 function love.draw()
