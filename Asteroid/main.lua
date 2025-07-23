@@ -1,5 +1,5 @@
 local love = require "love"
-local Player = require "Player"
+local Player = require "Asteroid.objects.Player"
 local Game = require "states/Game"
 
 function love.load()
@@ -31,16 +31,19 @@ function love.keyreleased(key)
     end
 end
 
-function love.update()
+function love.update(dt)  -- Add dt parameter
     _G.mouse_x, _G.mouse_y = love.mouse.getPosition()
     if game.states.running then
-        player:move()   
+        player:move()
     end
-    
+    game:update(dt)  -- Update game state animations
 end
 
 function love.draw()
-    player:draw()
+    if game.states.running or game.states.paused then
+        player:draw()
+        game:draw(game.states.paused)
+    end
     love.graphics.setColor(1, 1, 1)
     love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 10)
 end
