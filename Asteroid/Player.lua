@@ -15,16 +15,44 @@ function Player(debugging)
             x=0,y=0,speed=5,big_flame = false, flame=2.0
         },
         draw_flame = function (self,fill_type,color)
-
+            love.graphics.setColor(color)
+            love.graphics.polygon(
+                fill_type,
+                self.x-self.radius*((2/3)*math.cos(self.angle)+0.5*math.sin(self.angle)),
+                self.y+self.radius*((2/3)*math.sin(self.angle)-0.5*math.cos(self.angle)),
+                self.x-self.radius*self.thrust.flame*math.cos(self.angle),
+                self.y+self.radius*self.thrust.flame*math.sin(self.angle),
+                self.x-self.radius*((2/3)*math.cos(self.angle)-0.5*math.sin(self.angle)),
+                self.y+self.radius*((2/3)*math.sin(self.angle)+0.5*math.cos(self.angle))
+            )
         end,
+
+        
         draw = function (self)
             local opacity = 1
+            if self.thrusting then
+                if not self.thrust.big_flame then
+                    self.thrust.flame = self.thrust.flame-1/love.timer.getFPS()
+                    if self.thrust.flame < 1.5 then
+                        self.thrust.big_flame = true
+                        -- self.thrust.flame = 1.5
+                    end
+                else
+                    self.thrust.flame = self.thrust.flame + 1/love.timer.getFPS()
+                    if self.thrust.flame > 2.5 then
+                        self.thrust.big_flame = false
+                        -- self.thrust.flame = 1.5
+                    end
+                end
+                self:draw_flame('fill', {255/255,102/255,25/255})
+                self:draw_flame("line", {1,0,16,0})
+            end
             if debugging then
                 love.graphics.setColor(1,0,0)
                 love.graphics.rectangle('fill', self.x-1,self.y-1,2,2)
                 love.graphics.circle('line', self.x,self.y, self.radius) --collision radius added around the ship to drastically reduce the number of calcs.
             end
-            love.graphics.setColor(1,1,1,opacity)
+            love.graphics.setColor(0, 255, 0, 255,opacity)
             --this function right here will set the size and shape of the ship which currently is a triangle 
             love.graphics.polygon(
             "line",
@@ -38,7 +66,8 @@ function Player(debugging)
             self.x-self.radius*(2/3*math.cos(self.angle)-math.sin(self.angle)),
             self.y+self.radius*(2/3*math.sin(self.angle)+math.cos(self.angle))
         )
-        end,move = function (self)
+        end,
+        move = function (self)
             local FPS = love.timer.getFPS()
             local friction = 0.5 -- friction to slow down the ship
             self.rotation = 360/180*math.pi/FPS --how much plaver will turn evey second
@@ -64,6 +93,17 @@ function Player(debugging)
             -- Apply thrust to position
             self.x = self.x + self.thrust.x
             self.y = self.y + self.thrust.y
+
+            if self.x+self.radius<0 then
+                self.x = love.graphics.getWidth() + self.radius
+            elseif self.x-self.radius>love.graphics.getWidth() then
+                self.x = -self.radius
+            end
+            if self.y+self.radius<0 then
+                self.y = love.graphics.getWidth() + self.radius
+            elseif self.y-self.radius>love.graphics.getWidth() then
+                self.y = -self.radius
+            end
         end
     }
 end

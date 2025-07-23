@@ -9,12 +9,12 @@ function love.load()
 end
 
 function love.keypressed(key)
-    if key == "w" or key=="up" or key=="kp8" then 
+    if key == "w" or key=="up" or key=="kp8" then
         player.thrusting = true
     end
 end
 function love.keyreleased(key)
-    if key == "w" or key=="up" or key=="kp8" then 
+    if key == "w" or key=="up" or key=="kp8" then
         player.thrusting = false
     end
 end
