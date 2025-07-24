@@ -1,8 +1,11 @@
 local love =require"love"
+local LAZER = require "objects.Laser"
 -- in this the rad is used instead of degree because the degreen function would have been way off and would have been a more tuffer to deal with it
 function Player(debugging)
     local SHIP_SIZE = 30
     local VIEW_ANGLE = math.rad(90) -- 90 degrees to radians almost equivalent to 1.57
+    local LAZER_DISTANCE = 0.6
+    local MAX_LAZERS = 10
     debugging = debugging or false
     return {
         x = love.graphics.getWidth()/2,
@@ -10,6 +13,7 @@ function Player(debugging)
         radius = SHIP_SIZE/2,
         angle = VIEW_ANGLE,
         rotation = 0,
+        lazers = {},
         thrusting = false,
         thrust = {
             x=0,y=0,speed=5,big_flame = false, flame=2.0
@@ -26,7 +30,19 @@ function Player(debugging)
                 self.y+self.radius*((2/3)*math.sin(self.angle)+0.5*math.cos(self.angle))
             )
         end,
+        shootLazer = function (self)
+            if #self.lazers < MAX_LAZERS then
+                table.insert(self.lazers, LAZER(
+                    self.x,
+                    self.y,
+                    self.angle
+                ))
+            end
 
+        end,
+        destroyLazer = function (self, index)
+            table.remove(self.lazers, index)
+        end,
         
         draw = function (self, faded)
             local opacity = 1
@@ -69,6 +85,9 @@ function Player(debugging)
             self.x-self.radius*(2/3*math.cos(self.angle)-math.sin(self.angle)),
             self.y+self.radius*(2/3*math.sin(self.angle)+math.cos(self.angle))
         )
+        for _,lazer in pairs(self.lazers) do
+            lazer:draw(faded)
+        end
         end,
         move = function (self)
             local FPS = love.timer.getFPS()
@@ -106,6 +125,14 @@ function Player(debugging)
                 self.y = love.graphics.getWidth() + self.radius
             elseif self.y-self.radius>love.graphics.getWidth() then
                 self.y = -self.radius
+            end
+
+            for idx, lazer in pairs(self.lazers) do 
+                lazer:move()
+
+                if lazer.distance > LAZER_DISTANCE * love.graphics.getWidth() then
+                    self.destroyLazer(self, idx)
+                end
             end
         end
     }

@@ -18,6 +18,9 @@ function love.keypressed(key)
         if key == "w" or key=="up" or key=="kp8" then
             player.thrusting = true
         end
+        if key == "space" or key=="kp5" then
+            player:shootLazer()
+        end
 
         if key == "escape" then
             game:changeState("paused")
@@ -31,6 +34,14 @@ end
 function love.keyreleased(key)
     if key == "w" or key=="up" or key=="kp8" then
         player.thrusting = false
+    end
+end
+
+function love.mousepressed(x,y,button,istouch, presses)
+    if button==1 then
+        if game.states.running then
+            player:shootLazer()
+        end
     end
 end
 
