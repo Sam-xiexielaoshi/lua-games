@@ -2,12 +2,15 @@ local love = require "love"
 local Player = require "Asteroid.objects.Player"
 local Game = require "states/Game"
 
+math.randomseed(os.time())
+
 function love.load()
     love.mouse.setVisible(false)
     _G.mouse_x, _G.mouse_y = 0,0
     local show_debugging = true
     _G.player = Player(show_debugging)
     _G.game = Game()
+    game:startNewGame(player)
 end
 
 function love.keypressed(key)
@@ -31,17 +34,22 @@ function love.keyreleased(key)
     end
 end
 
-function love.update(dt)  -- Add dt parameter
+function love.update(dt)
     _G.mouse_x, _G.mouse_y = love.mouse.getPosition()
     if game.states.running then
         player:move()
+        for ast_idx, asteroids in pairs(_G.asteroids) do
+            asteroids:move(dt)
+        end
     end
-    game:update(dt)  -- Update game state animations
 end
 
 function love.draw()
     if game.states.running or game.states.paused then
-        player:draw()
+        player:draw(game.states.paused)
+        for _, asteroids in pairs(_G.asteroids) do
+            asteroids:draw(game.states.paused)
+        end
         game:draw(game.states.paused)
     end
     love.graphics.setColor(1, 1, 1)
