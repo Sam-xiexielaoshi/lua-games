@@ -4,6 +4,7 @@ local LAZER = require "objects.Laser"
 -- in this the rad is used instead of degree because the degreen function would have been way off and would have been a more tuffer to deal with it
 function Player()
     local SHIP_SIZE = 30
+    local EXPLOAD_DURATION = 5
     local VIEW_ANGLE = math.rad(90) -- 90 degrees to radians almost equivalent to 1.57
     local LAZER_DISTANCE = 0.6
     local MAX_LAZERS = 10
@@ -13,6 +14,8 @@ function Player()
         radius = SHIP_SIZE / 2,
         angle = VIEW_ANGLE,
         rotation = 0,
+        expload_time = 0,
+        exploading = false,
         lazers = {},
         thrusting = false,
         thrust = {
@@ -39,6 +42,7 @@ function Player()
                 ))
             end
         end,
+
         destroyLazer = function(self, index)
             table.remove(self.lazers, index)
         end,
@@ -48,24 +52,26 @@ function Player()
             if faded then
                 opacity = 0.5
             end
-            if self.thrusting then
-                if not self.thrust.big_flame then
-                    self.thrust.flame = self.thrust.flame - 1 / love.timer.getFPS()
-                    if self.thrust.flame < 1.5 then
-                        self.thrust.big_flame = true
-                        -- self.thrust.flame = 1.5
+
+            if not self.exploading then
+                if self.thrusting then
+                    if not self.thrust.big_flame then
+                        self.thrust.flame = self.thrust.flame - 1 / love.timer.getFPS()
+                        if self.thrust.flame < 1.5 then
+                            self.thrust.big_flame = true
+                            -- self.thrust.flame = 1.5
+                        end
+                    else
+                        self.thrust.flame = self.thrust.flame + 1 / love.timer.getFPS()
+                        if self.thrust.flame > 2.5 then
+                            self.thrust.big_flame = false
+                            -- self.thrust.flame = 1.5
+                        end
                     end
-                else
-                    self.thrust.flame = self.thrust.flame + 1 / love.timer.getFPS()
-                    if self.thrust.flame > 2.5 then
-                        self.thrust.big_flame = false
-                        -- self.thrust.flame = 1.5
-                    end
+                    self:draw_flame('fill', { 255 / 255, 102 / 255, 25 / 255 })
+                    self:draw_flame("line", { 1, 0, 16, 0 })
                 end
-                self:draw_flame('fill', { 255 / 255, 102 / 255, 25 / 255 })
-                self:draw_flame("line", { 1, 0, 16, 0 })
-            end
-            if SHOW_DEBUGGING then
+                if SHOW_DEBUGGING then
                 love.graphics.setColor(1, 0, 0)
                 love.graphics.rectangle('fill', self.x - 1, self.y - 1, 2, 2)
                 love.graphics.circle('line', self.x, self.y, self.radius) --collision radius added around the ship to drastically reduce the number of calcs.
@@ -87,49 +93,74 @@ function Player()
             for _, lazer in pairs(self.lazers) do
                 lazer:draw(faded)
             end
+            else
+                love.graphics.setColor(1, 0, 0, opacity)
+                love.graphics.circle(
+                    'fill',
+                    self.x,
+                    self.y,
+                    self.radius * 1.6
+                )
+                love.graphics.setColor(1, 158 / 255, 0, opacity)
+                love.graphics.circle(
+                    'fill',
+                    self.x,
+                    self.y,
+                    self.radius * 1
+                )
+                love.graphics.setColor(1, 234 / 255, 0, opacity)
+                love.graphics.circle(
+                    'fill',
+                    self.x,
+                    self.y,
+                    self.radius * 0.5
+                )
+            end
         end,
         move = function(self)
-            local FPS = love.timer.getFPS()
-            local friction = 0.5                      -- friction to slow down the ship
-            self.rotation = 360 / 180 * math.pi / FPS --how much plaver will turn evey second
-            if love.keyboard.isDown("a") or love.keyboard.isDown("left") or love.keyboard.isDown("kp4") then
-                self.angle = self.angle + self.rotation
-            end
-            if love.keyboard.isDown("d") or love.keyboard.isDown("right") or love.keyboard.isDown("kp6") then
-                self.angle = self.angle - self.rotation
-            end
-            if self.thrusting then
-                self.thrust.x = self.thrust.x +
-                    self.thrust.speed * math.cos(self.angle) /
-                    FPS --math.cos(self.angle) gives the horizontal component of the direction vector || self.thrust.speed/FPS converts speed from "per second" to "per frame" || Accumulates horizontal thrust over time
-                self.thrust.y = self.thrust.y -
-                    self.thrust.speed * math.sin(self.angle) /
-                    FPS -- vertical component of the direction vector || self.thrust.speed/FPS converts speed from "per second" to "per frame" || Accumulates vertical thrust over time
-            else
-                if self.thrust.x ~= 0 or self.thrust.y ~= 0 then
-                    -- Apply friction
-                    self.thrust.x = self.thrust.x - friction * self.thrust.x / FPS
-                    self.thrust.y = self.thrust.y - friction * self.thrust.y / FPS
+            self.exploading = self.expload_time > 0
+            if not self.exploading then
+                local FPS = love.timer.getFPS()
+                local friction = 0.5                      -- friction to slow down the ship
+                self.rotation = 360 / 180 * math.pi / FPS --how much plaver will turn evey second
+                if love.keyboard.isDown("a") or love.keyboard.isDown("left") or love.keyboard.isDown("kp4") then
+                    self.angle = self.angle + self.rotation
+                end
+                if love.keyboard.isDown("d") or love.keyboard.isDown("right") or love.keyboard.isDown("kp6") then
+                    self.angle = self.angle - self.rotation
+                end
+                if self.thrusting then
+                    self.thrust.x = self.thrust.x +
+                        self.thrust.speed * math.cos(self.angle) /
+                        FPS --math.cos(self.angle) gives the horizontal component of the direction vector || self.thrust.speed/FPS converts speed from "per second" to "per frame" || Accumulates horizontal thrust over time
+                    self.thrust.y = self.thrust.y -
+                        self.thrust.speed * math.sin(self.angle) /
+                        FPS -- vertical component of the direction vector || self.thrust.speed/FPS converts speed from "per second" to "per frame" || Accumulates vertical thrust over time
+                else
+                    if self.thrust.x ~= 0 or self.thrust.y ~= 0 then
+                        -- Apply friction
+                        self.thrust.x = self.thrust.x - friction * self.thrust.x / FPS
+                        self.thrust.y = self.thrust.y - friction * self.thrust.y / FPS
+                    end
+                end
+                -- Apply thrust to position
+                self.x = self.x + self.thrust.x
+                self.y = self.y + self.thrust.y
+
+                if self.x + self.radius < 0 then
+                    self.x = love.graphics.getWidth() + self.radius
+                elseif self.x - self.radius > love.graphics.getWidth() then
+                    self.x = -self.radius
+                end
+                if self.y + self.radius < 0 then
+                    self.y = love.graphics.getHeight() + self.radius
+                elseif self.y - self.radius > love.graphics.getHeight() then
+                    self.y = -self.radius
                 end
             end
-            -- Apply thrust to position
-            self.x = self.x + self.thrust.x
-            self.y = self.y + self.thrust.y
-
-            if self.x + self.radius < 0 then
-                self.x = love.graphics.getWidth() + self.radius
-            elseif self.x - self.radius > love.graphics.getWidth() then
-                self.x = -self.radius
-            end
-            if self.y + self.radius < 0 then
-                self.y = love.graphics.getHeight() + self.radius
-            elseif self.y - self.radius > love.graphics.getHeight() then
-                self.y = -self.radius
-            end
-
             for idx, lazer in pairs(self.lazers) do
                 if lazer.exploding == 0 then
-                    lazer:move() -- Only move if not exploding
+                    lazer:move()     -- Only move if not exploding
 
                     if lazer.distance > LAZER_DISTANCE * love.graphics.getWidth() then
                         lazer:expload()
@@ -138,6 +169,9 @@ function Player()
                     self.destroyLazer(self, idx)
                 end
             end
+        end,
+        expload = function (self)
+            self.expload_time = math.ceil(EXPLOAD_DURATION*love.timer.getFPS())
         end
     }
 end
