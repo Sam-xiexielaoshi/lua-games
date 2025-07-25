@@ -58,6 +58,14 @@ function love.update(dt)
                 end
             else
                 player.expload_time = player.expload_time - 1
+
+                if player.expload_time == 0 then
+                    if player.lives - 1 <= 0 then
+                        game:changeState("ended")
+                        return
+                    end
+                    _G.player = Player(player.lives - 1)
+                end
             end
             for _, lazer in pairs(player.lazers) do
                 if calculateDistance(lazer.x, lazer.y, asteroids.x, asteroids.y) < asteroids.radius then
@@ -66,8 +74,15 @@ function love.update(dt)
                 end
             end
             if DESTROY_AST then
-                DESTROY_AST = false
-                asteroids:destroy(_G.asteroids, ast_idx, game)
+                if player.lives - 1 <= 0 then
+                    if player.expload_time == 0 then
+                        DESTROY_AST = false
+                        asteroids:destroy(_G.asteroids, ast_idx, game)
+                    end
+                else
+                    DESTROY_AST = false
+                    asteroids:destroy(_G.asteroids, ast_idx, game)
+                end
             end
             asteroids:move(dt)
         end
@@ -77,11 +92,12 @@ end
 function love.draw()
     if game.states.running or game.states.paused then
         player:draw(game.states.paused)
+        player:drawLives(game.states.paused)
         for _, asteroids in pairs(_G.asteroids) do
             asteroids:draw(game.states.paused)
         end
         game:draw(game.states.paused)
     end
     love.graphics.setColor(1, 1, 1)
-    love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 10)
+    love.graphics.print("FPS: " .. love.timer.getFPS(), 10, love.graphics.getHeight() - 20)
 end
