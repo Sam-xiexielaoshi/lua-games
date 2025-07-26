@@ -29,9 +29,9 @@ function Game()
     return {
         level = 1,
         states = {
-            menu = false,
+            menu = true,
             paused = false,
-            running = true,
+            running = false,
             ended = false
         },
         changeState = function(self, state)
