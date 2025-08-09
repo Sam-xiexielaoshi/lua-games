@@ -90,6 +90,7 @@ function love.update(dt)
             asteroids:move(dt)
         end
     elseif game.states.menu then
+        menu:run(_G.clickedMouse)
         _G.clickedMouse = false
     end
 end
@@ -105,6 +106,9 @@ function love.draw()
     elseif game.states.menu then
         menu:draw()
     end
-    love.graphics.setColor(1, 1, 1)
+    love.graphics.setColor(1, 1, 1, 1)
+    if not game.states.running then
+        love.graphics.circle("fill", mouse_x, mouse_y, 10)
+    end
     love.graphics.print("FPS: " .. love.timer.getFPS(), 10, love.graphics.getHeight() - 20)
 end
